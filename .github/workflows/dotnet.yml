@@ -1,0 +1,16 @@
+name: .NET
+
+on:
+  push:
+    branches: ["product"]
+  pull_request:
+    branches: ["product"]
+
+jobs:
+  publish:
+    uses: TechTeaStudio/.github/.github/workflows/nuget-publish-reusable.yml@main
+    with:
+      solution: src/TechTeaStudio.NotificationMachine/TechTeaStudio.NotificationMachine.sln
+      projects_glob: src/*/*/*.csproj
+    secrets:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

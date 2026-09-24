@@ -1,0 +1,75 @@
+<Project>
+
+  <!-- Shared by every project in the solution. Package identity and description stay in the
+       individual .csproj file; everything uniform lives here so it cannot drift between the
+       library and (in the future) a sibling package. -->
+
+  <PropertyGroup>
+    <!-- NO <Version> HERE. The org-wide publish workflow reads the package's version by
+         grepping the .csproj text for a literal <Version> tag:
+             VERSION=$(grep -Po '(?<=<Version>)[^<]+' "$proj" || true)
+             if [[ -z "$VERSION" ]]; then echo "Skipping $proj"; continue; fi
+         It never asks MSBuild, so a version set here is invisible to it and the project is
+         silently skipped - nothing gets packed and the release goes out empty. The packable
+         .csproj therefore carries its own <Version>. -->
+    <Authors>Ronald Ryan</Authors>
+    <Company>Tech Tea Studio</Company>
+    <Copyright>Copyright © Tech Tea Studio 2026</Copyright>
+    <PackageProjectUrl>https://github.com/TechTeaStudio/NotificationMachine</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/TechTeaStudio/NotificationMachine</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- net8.0 is the floor on purpose, not a compromise: TimeProvider and Task.Delay(TimeSpan,
+         TimeProvider, CancellationToken) are .NET 8 APIs, HttpClientBuilder.RemoveAllLoggers is a
+         .NET 8 Microsoft.Extensions.Http API, and Stream.ReadExactlyAsync is .NET 7+. Every known
+         consumer (DiscordBotMike, Chronos, HyperionOmniClient) already runs net10.0, so there is
+         no net6/net7 host to support and no reason to polyfill downward. -->
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <!-- net8.0 and net9.0 go end-of-life on 2026-11-10; CI treats warnings as errors, and the SDK
+         turns EOL-TFM into a build warning starting the same day. Keep building them regardless -
+         consumers pin runtimes on their own schedule, not the SDK's. -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573;CS1574</NoWarn>
+    <!-- The same source compiles three times, so a warning on one framework only is easy to
+         scroll past. Fatal on the build server; left as warnings locally so iteration stays fast. -->
+    <TreatWarningsAsErrors Condition="'$(GITHUB_ACTIONS)' == 'true'">true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Deliberately NO GeneratePackageOnBuild. Three frameworks would otherwise repack the
+         .nupkg/.snupkg on every build - including Debug and every dotnet test run. Packing is
+         one explicit Release step; CI already runs it that way. -->
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- Debugging into the package: SourceLink for GitHub ships inside the SDK since 8.0.100,
+         so these three properties are the whole setup - no PackageReference required. -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!-- Byte-identical output for a given commit, but only on the build server: enabling it
+         locally rewrites source paths and breaks step-through debugging in the IDE. -->
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <Deterministic>true</Deterministic>
+    <!-- Fails the pack if the three target frameworks stop exposing the same public API, which is
+         the failure mode a TFM-conditional (#if) most easily introduces. -->
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+
+  <!-- Anchored to this file rather than relative to the project, so a future sibling package
+       folder under src/ picks up the same packed files without counting ..\ levels again. -->
+  <ItemGroup Condition="'$(IsPackable)' != 'false'">
+    <None Include="$(MSBuildThisFileDirectory)TechTeaStudio.NotificationMachine\icon.png" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)..\CHANGELOG.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+</Project>
