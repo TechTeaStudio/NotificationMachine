@@ -3,10 +3,10 @@
   <PropertyGroup>
     <PackageId>TechTeaStudio.NotificationMachine</PackageId>
     <!-- Must be a literal tag in this file - the publish workflow greps for it. -->
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Description>Ships a service's daily Serilog rolling log file to a Telegram chat once a day, plus an on-demand "send the log now" API. Talks to the Bot API directly over HttpClient - no ASP.NET Core FrameworkReference, no Telegram.Bot package, safe for a plain console worker. Targets net8.0 through net10.0.</Description>
     <PackageTags>telegram;logging;serilog;logs;notifications;hosted-service;background-service;TechTeaStudio</PackageTags>
-    <PackageReleaseNotes>v0.1.0: Initial release. Daily Telegram delivery of a Serilog RollingInterval.Day log file via a BackgroundService, plus an on-demand ITelegramLogSender (SendLatestAsync / SendPreviousDayAsync / SendDailyLogAsync) for a manual "send the log now" command. Extracted from DiscordBotMike's TelegramLogService and its Chronos and HyperionOmniClient ports.
+    <PackageReleaseNotes>v0.1.1: New package icon - a notification bell with the Tech Tea Studio mark in front of a gear. No code or API changes; the assembly is functionally identical to 0.1.0.
 
 Full changelog: https://github.com/TechTeaStudio/NotificationMachine/blob/product/CHANGELOG.md</PackageReleaseNotes>
   </PropertyGroup>

@@ -3,6 +3,14 @@
 All notable changes to this package are documented here.
 Format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-10-02
+
+Cosmetic release: the package icon was redrawn. No code or API changes - the assembly is functionally identical to 0.1.0, so there is nothing to do on upgrade.
+
+### Changed
+
+- New package icon (`icon.png`): a notification bell carrying the Tech Tea Studio mark, in front of a gear. It replaces the previous "document with a paper plane" icon everywhere the package icon is shown - nuget.org, the IDE package manager, and the README header.
+
 ## [0.1.0] - 2026-09-24
 
 First release. Extracted from DiscordBotMike's `TelegramLogService`, where daily Telegram log delivery started, and its two in-repo ports: Chronos's `TelegramLogDeliveryService` and HyperionOmniClient's more generalized `Hyperion.Application.Common.Telegram`. All three copies did the same job with small differences that had drifted apart over time; this package replaces them with one implementation and normalizes those differences deliberately (see below).

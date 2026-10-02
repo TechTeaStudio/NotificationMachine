@@ -21,12 +21,17 @@ public class TelegramLogDeliveryServiceTests
         UtcOffset = offset,
     };
 
+    // Seeing the sender called is not enough to advance the clock again: the loop still has to
+    // come back around and arm its next wait, and that happens on the thread pool.
+    private static async Task WaitForArmedTimerAsync(TimerCountingTimeProvider time, int timers) =>
+        Assert.True(await AsyncTestHelpers.WaitUntilAsync(() => time.TimersCreated >= timers, PollTimeout));
+
     [Fact]
     public async Task ExecuteAsync_CrossingScheduledTime_CallsSendPreviousDayOnceThenAgainNextDay()
     {
         var offset = TimeSpan.FromHours(3);
         // 2026-09-24T02:59:00Z == 2026-09-24 05:59 MSK.
-        var time = new FakeTimeProvider(new DateTimeOffset(2026, 9, 24, 2, 59, 0, TimeSpan.Zero));
+        var time = new TimerCountingTimeProvider(new DateTimeOffset(2026, 9, 24, 2, 59, 0, TimeSpan.Zero));
         var monitor = new TestOptionsMonitor<TelegramLogDeliveryOptions>(ConfiguredOptions(6, offset));
         var sender = new RecordingTelegramLogSender();
         var service = new TelegramLogDeliveryService(monitor, sender, time, NullLogger<TelegramLogDeliveryService>.Instance);
@@ -34,9 +39,11 @@ public class TelegramLogDeliveryServiceTests
         await service.StartAsync(CancellationToken.None);
         try
         {
+            await WaitForArmedTimerAsync(time, 1);
             time.Advance(TimeSpan.FromMinutes(1));
             Assert.True(await AsyncTestHelpers.WaitUntilAsync(() => sender.PreviousDayCallCount == 1, PollTimeout));
 
+            await WaitForArmedTimerAsync(time, 2);
             time.Advance(TimeSpan.FromHours(24));
             Assert.True(await AsyncTestHelpers.WaitUntilAsync(() => sender.PreviousDayCallCount == 2, PollTimeout));
         }
@@ -50,7 +57,7 @@ public class TelegramLogDeliveryServiceTests
     public async Task ExecuteAsync_UnconfiguredAtFireTime_SkipsThenCallsOnceConfiguredAtNextFire()
     {
         var offset = TimeSpan.Zero;
-        var time = new FakeTimeProvider(new DateTimeOffset(2026, 9, 24, 5, 59, 0, TimeSpan.Zero));
+        var time = new TimerCountingTimeProvider(new DateTimeOffset(2026, 9, 24, 5, 59, 0, TimeSpan.Zero));
         var options = new TelegramLogDeliveryOptions { Hour = 6, UtcOffset = offset }; // BotToken/ChatId unset.
         var monitor = new TestOptionsMonitor<TelegramLogDeliveryOptions>(options);
         var sender = new RecordingTelegramLogSender();
@@ -60,6 +67,7 @@ public class TelegramLogDeliveryServiceTests
         await service.StartAsync(CancellationToken.None);
         try
         {
+            await WaitForArmedTimerAsync(time, 1);
             time.Advance(TimeSpan.FromMinutes(1));
             // Wait for the "skipped" Debug entry rather than a fixed delay: it proves the fire
             // already happened and was evaluated, so the call-count assertion below is not a race.
@@ -67,6 +75,7 @@ public class TelegramLogDeliveryServiceTests
                 () => logger.Any(LogLevel.Debug, m => m.Contains("skipped")), PollTimeout));
             Assert.Equal(0, sender.PreviousDayCallCount);
 
+            await WaitForArmedTimerAsync(time, 2);
             monitor.CurrentValue = ConfiguredOptions(6, offset);
             time.Advance(TimeSpan.FromHours(24));
             Assert.True(await AsyncTestHelpers.WaitUntilAsync(() => sender.PreviousDayCallCount == 1, PollTimeout));
@@ -96,7 +105,7 @@ public class TelegramLogDeliveryServiceTests
     public async Task ExecuteAsync_SenderThrowsNonShutdownOperationCanceled_LoopSurvivesAndCallsAgainNextFire()
     {
         var offset = TimeSpan.Zero;
-        var time = new FakeTimeProvider(new DateTimeOffset(2026, 9, 24, 5, 59, 0, TimeSpan.Zero));
+        var time = new TimerCountingTimeProvider(new DateTimeOffset(2026, 9, 24, 5, 59, 0, TimeSpan.Zero));
         var monitor = new TestOptionsMonitor<TelegramLogDeliveryOptions>(ConfiguredOptions(6, offset));
         var sender = new FlakyTelegramLogSender();
         var service = new TelegramLogDeliveryService(monitor, sender, time, NullLogger<TelegramLogDeliveryService>.Instance);
@@ -104,9 +113,11 @@ public class TelegramLogDeliveryServiceTests
         await service.StartAsync(CancellationToken.None);
         try
         {
+            await WaitForArmedTimerAsync(time, 1);
             time.Advance(TimeSpan.FromMinutes(1));
             Assert.True(await AsyncTestHelpers.WaitUntilAsync(() => sender.CallCount == 1, PollTimeout));
 
+            await WaitForArmedTimerAsync(time, 2);
             time.Advance(TimeSpan.FromHours(24));
             Assert.True(await AsyncTestHelpers.WaitUntilAsync(() => sender.CallCount == 2, PollTimeout));
         }
