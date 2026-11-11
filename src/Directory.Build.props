@@ -27,7 +27,7 @@
          .NET 8 Microsoft.Extensions.Http API, and Stream.ReadExactlyAsync is .NET 7+. Every known
          consumer (DiscordBotMike, Chronos, HyperionOmniClient) already runs net10.0, so there is
          no net6/net7 host to support and no reason to polyfill downward. -->
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <!-- net8.0 and net9.0 go end-of-life on 2026-11-10; CI treats warnings as errors, and the SDK
          turns EOL-TFM into a build warning starting the same day. Keep building them regardless -
          consumers pin runtimes on their own schedule, not the SDK's. -->
@@ -37,13 +37,13 @@
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591;CS1573;CS1574</NoWarn>
-    <!-- The same source compiles three times, so a warning on one framework only is easy to
+    <!-- The same source compiles four times, so a warning on one framework only is easy to
          scroll past. Fatal on the build server; left as warnings locally so iteration stays fast. -->
     <TreatWarningsAsErrors Condition="'$(GITHUB_ACTIONS)' == 'true'">true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Deliberately NO GeneratePackageOnBuild. Three frameworks would otherwise repack the
+    <!-- Deliberately NO GeneratePackageOnBuild. Four frameworks would otherwise repack the
          .nupkg/.snupkg on every build - including Debug and every dotnet test run. Packing is
          one explicit Release step; CI already runs it that way. -->
     <PackageIcon>icon.png</PackageIcon>
@@ -58,7 +58,7 @@
          locally rewrites source paths and breaks step-through debugging in the IDE. -->
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     <Deterministic>true</Deterministic>
-    <!-- Fails the pack if the three target frameworks stop exposing the same public API, which is
+    <!-- Fails the pack if the four target frameworks stop exposing the same public API, which is
          the failure mode a TFM-conditional (#if) most easily introduces. -->
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>

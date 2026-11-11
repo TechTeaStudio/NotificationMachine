@@ -3,6 +3,14 @@
 All notable changes to this package are documented here.
 Format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-11-11
+
+Adds the `net11.0` target. No code or API changes - the `net8.0`, `net9.0` and `net10.0` assemblies are unchanged, so there is nothing to do on upgrade.
+
+### Added
+
+- `net11.0` target framework, next to `net8.0`, `net9.0` and `net10.0`. The test project runs on all four.
+
 ## [0.1.1] - 2026-10-02
 
 Cosmetic release: the package icon was redrawn. No code or API changes - the assembly is functionally identical to 0.1.0, so there is nothing to do on upgrade.

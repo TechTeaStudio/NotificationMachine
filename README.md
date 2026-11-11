@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://www.nuget.org/packages/TechTeaStudio.NotificationMachine"><img alt="NuGet" src="https://img.shields.io/nuget/v/TechTeaStudio.NotificationMachine.svg?logo=nuget&label=NuGet" /></a>
   <a href="https://www.nuget.org/packages/TechTeaStudio.NotificationMachine"><img alt="Downloads" src="https://img.shields.io/nuget/dt/TechTeaStudio.NotificationMachine.svg?logo=nuget&label=Downloads" /></a>
-  <img alt=".NET" src="https://img.shields.io/badge/.NET-8.0%20%E2%86%92%2010.0-512BD4?logo=dotnet&logoColor=white" />
+  <img alt=".NET" src="https://img.shields.io/badge/.NET-8.0%20%E2%86%92%2011.0-512BD4?logo=dotnet&logoColor=white" />
   <a href="https://github.com/TechTeaStudio/NotificationMachine/actions/workflows/dotnet.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/TechTeaStudio/NotificationMachine/dotnet.yml?branch=product&logo=github&label=build" /></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
 </p>
@@ -191,7 +191,7 @@ public sealed class SendLogsCommand
 
 ## Target frameworks
 
-`net8.0`, `net9.0`, `net10.0`. No ASP.NET Core dependency - works from a plain console worker, a Worker Service template project, or a full ASP.NET Core host equally.
+`net8.0`, `net9.0`, `net10.0`, `net11.0`. No ASP.NET Core dependency - works from a plain console worker, a Worker Service template project, or a full ASP.NET Core host equally.
 
 ## Project layout
 
@@ -219,7 +219,7 @@ dotnet test  src/TechTeaStudio.NotificationMachine/TechTeaStudio.NotificationMac
 dotnet pack  src/TechTeaStudio.NotificationMachine/TechTeaStudio.NotificationMachine/TechTeaStudio.NotificationMachine.csproj -c Release -o artifacts
 ```
 
-There is no `GeneratePackageOnBuild` - packing is an explicit step, so three target frameworks do not repack the `.nupkg`/`.snupkg` on every build and every test run.
+There is no `GeneratePackageOnBuild` - packing is an explicit step, so four target frameworks do not repack the `.nupkg`/`.snupkg` on every build and every test run.
 
 ## Versioning & release
 
