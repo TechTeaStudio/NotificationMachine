@@ -8,9 +8,12 @@ on:
 
 jobs:
   publish:
+    # nuget.org Trusted Publishing: the reusable workflow exchanges a GitHub OIDC token for
+    # a short-lived API key, so no NUGET_API_KEY secret is stored or passed.
+    permissions:
+      id-token: write
+      contents: read
     uses: TechTeaStudio/.github/.github/workflows/nuget-publish-reusable.yml@main
     with:
       solution: src/TechTeaStudio.NotificationMachine/TechTeaStudio.NotificationMachine.sln
       projects_glob: src/*/*/*.csproj
-    secrets:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
