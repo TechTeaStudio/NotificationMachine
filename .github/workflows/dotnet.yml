@@ -7,13 +7,41 @@ on:
     branches: ["product"]
 
 jobs:
-  publish:
-    # nuget.org Trusted Publishing: the reusable workflow exchanges a GitHub OIDC token for
-    # a short-lived API key, so no NUGET_API_KEY secret is stored or passed.
-    permissions:
-      id-token: write
-      contents: read
+  # Restore, build, test and pack. The packages come back as the "nupkg" artifact.
+  build:
     uses: TechTeaStudio/.github/.github/workflows/nuget-publish-reusable.yml@main
     with:
       solution: src/TechTeaStudio.NotificationMachine/TechTeaStudio.NotificationMachine.sln
       projects_glob: src/*/*/*.csproj
+
+  # nuget.org Trusted Publishing. The login must run in a job of THIS file: nuget.org matches
+  # the policy (repository + dotnet.yml) against the job's own workflow, so a shared workflow
+  # from another repository cannot do it. GitHub issues an OIDC token, nuget.org exchanges it
+  # for a one-hour API key, and no secret is stored anywhere. A pull request never publishes.
+  publish:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nupkg
+          path: artifacts
+
+      - name: NuGet login (OIDC, temporary API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: RonaldRyan
+
+      - name: Push to nuget.org
+        run: |
+          for pkg in artifacts/*.nupkg; do
+            echo "Pushing $pkg"
+            dotnet nuget push "$pkg" \
+              --source https://api.nuget.org/v3/index.json \
+              --api-key ${{ steps.login.outputs.NUGET_API_KEY }} \
+              --skip-duplicate
+          done
